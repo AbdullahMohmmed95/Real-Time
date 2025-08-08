@@ -23,11 +23,10 @@ jobs:
 
       - name: Build & Push backend
         run: |
-          docker build -t youruser/backend:latest ./backend
-          docker push youruser/backend:latest
+          docker build -t abdullah1995171/backend:latest ./backend
+          docker push abdullah1995171/backend:latest
 
       - name: Build & Push frontend
         run: |
-          docker build -t youruser/frontend:latest ./frontend
-          docker push youruser/frontend:latest
-
+          docker build -t abdullah1995171/frontend:latest ./frontend
+          docker push abdullah1995171/frontend:latest
