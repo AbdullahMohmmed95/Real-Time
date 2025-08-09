@@ -1,32 +1,55 @@
-name: Build and Push Docker Images
+name: Build & Push Docker Images (frontend + backend)
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAMESPACE: ${{ secrets.DOCKER_USERNAME }}  # your Docker Hub username
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
+          registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push backend
+      # --- FRONTEND ---
+      - name: Build frontend image
         run: |
-          docker build -t abdullah1995171/backend:latest ./backend
-          docker push abdullah1995171/backend:latest
+          docker build \
+            -t $IMAGE_NAMESPACE/frontend:latest \
+            -t $IMAGE_NAMESPACE/frontend:${{ github.sha }} \
+            ./frontend
 
-      - name: Build & Push frontend
+      - name: Push frontend image
         run: |
-          docker build -t abdullah1995171/frontend:latest ./frontend
-          docker push abdullah1995171/frontend:latest
+          docker push $IMAGE_NAMESPACE/frontend:latest
+          docker push $IMAGE_NAMESPACE/frontend:${{ github.sha }}
+
+      # --- BACKEND ---
+      - name: Build backend image
+        run: |
+          docker build \
+            -t $IMAGE_NAMESPACE/backend:latest \
+            -t $IMAGE_NAMESPACE/backend:${{ github.sha }} \
+            ./backend
+
+      - name: Push backend image
+        run: |
+          docker push $IMAGE_NAMESPACE/backend:latest
+          docker push $IMAGE_NAMESPACE/backend:${{ github.sha }}
+
